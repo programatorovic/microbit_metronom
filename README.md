@@ -1,15 +1,19 @@
 # Metronome
 
-Metronome extension for BBC micro:bit.
+Advanced musical metronome for BBC micro:bit.
 
 ## Features
 
 - BPM control
 - Time signatures
-- Whole, half, quarter, eighth and sixteenth notes
-- Accented first beat
-- Start / Stop
+- LED beat display
+- First beat accent
 - Custom frequencies
+- TAP tempo
+- On Beat events
+- Current BPM
+- Current Beat
+- Safe Start / Stop
 
 ## Example
 
@@ -21,18 +25,16 @@ metronome.start(
 )
 ```
 
-Creates a 4/4 metronome at 120 BPM.
+## Event Example
 
-The first beat is played with a higher pitch.
+```blocks
+metronome.onBeat(
+    metronome.BeatNumber.One,
+    function () {
 
-## Available Blocks
-
-- start metronome
-- stop metronome
-- metronome running
-- set accent frequency
-- set beat frequency
-- restart metronome
+    }
+)
+```
 
 ## License
 
