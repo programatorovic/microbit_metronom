@@ -10,8 +10,11 @@ namespace metronome {
     let running = false
     let sessionId = 0
 
-    let accentFrequency = 1760
-    let beatFrequency = 880
+    // Prvá doba = vyšší tón
+    let accentFrequency = 2000
+
+    // Ostatné doby = nižší tón
+    let beatFrequency = 1000
 
     /**
      * Start metronome
@@ -31,11 +34,8 @@ namespace metronome {
 
         stop()
 
-        if (bpm < 1)
-            bpm = 1
-
-        if (beats < 1)
-            beats = 1
+        if (bpm < 1) bpm = 1
+        if (beats < 1) beats = 1
 
         running = true
         sessionId++
@@ -51,21 +51,22 @@ namespace metronome {
 
                 for (let beat = 1; beat <= beats; beat++) {
 
-                    if (!running)
-                        return
+                    if (!running) return
 
                     if (mySession != sessionId)
                         return
 
                     if (beat == 1) {
 
+                        // zvýraznený prvý tik
                         music.playTone(
                             accentFrequency,
-                            40
+                            80
                         )
 
                     } else {
 
+                        // ostatné tiky
                         music.playTone(
                             beatFrequency,
                             40
@@ -73,7 +74,8 @@ namespace metronome {
 
                     }
 
-                    let waitTime = duration - 40
+                    let waitTime =
+                        duration - (beat == 1 ? 80 : 40)
 
                     if (waitTime < 1)
                         waitTime = 1
@@ -98,7 +100,7 @@ namespace metronome {
     }
 
     /**
-     * Metronome state
+     * Returns true if running
      */
     //% block="metronome running"
     export function isRunning(): boolean {
@@ -112,26 +114,26 @@ namespace metronome {
     //% block="set accent frequency %hz"
     //% hz.min=100
     //% hz.max=5000
-    //% hz.defl=1760
+    //% hz.defl=2000
     export function setAccentFrequency(hz: number): void {
 
         accentFrequency = hz
     }
 
     /**
-     * Set normal beat frequency
+     * Set beat frequency
      */
     //% block="set beat frequency %hz"
     //% hz.min=100
     //% hz.max=5000
-    //% hz.defl=880
+    //% hz.defl=1000
     export function setBeatFrequency(hz: number): void {
 
         beatFrequency = hz
     }
 
     /**
-     * Set BPM while running
+     * Restart metronome
      */
     //% block="restart metronome BPM %bpm beats %beats note %noteValue"
     export function restart(
@@ -141,12 +143,13 @@ namespace metronome {
     ): void {
 
         stop()
+
         basic.pause(50)
+
         start(
             bpm,
             beats,
             noteValue
         )
     }
-
 }

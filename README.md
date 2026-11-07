@@ -1,16 +1,15 @@
 # Metronome
 
-Professional metronome extension for BBC micro:bit.
+Metronome extension for BBC micro:bit.
 
 ## Features
 
-- BPM tempo control
+- BPM control
 - Time signatures
-- Quarter, half, whole, eighth and sixteenth notes
+- Whole, half, quarter, eighth and sixteenth notes
 - Accented first beat
-- Start and stop blocks
-- Custom beat frequencies
-- Safe restart protection
+- Start / Stop
+- Custom frequencies
 
 ## Example
 
@@ -22,9 +21,11 @@ metronome.start(
 )
 ```
 
-4/4 metronome at 120 BPM.
+Creates a 4/4 metronome at 120 BPM.
 
-## Blocks
+The first beat is played with a higher pitch.
+
+## Available Blocks
 
 - start metronome
 - stop metronome
