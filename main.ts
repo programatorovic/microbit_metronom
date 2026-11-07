@@ -7,24 +7,43 @@
 //% block="Metronome"
 namespace metronome {
 
-    const EVENT_ID = 9000
-    const TAP_TIMEOUT = 2000
+    const FIRST_BEAT_EVENT = 9001
+    const OTHER_BEAT_EVENT = 9002
 
     let running = false
     let sessionId = 0
 
-    let accentFrequency = 2000
-    let beatFrequency = 1000
-
-    let ledEnabled = true
-
     let currentBeat = 0
     let currentBpm = 120
 
+    let ledEnabled = true
+
+    let accentFrequency = 2000
+    let beatFrequency = 1000
+
+    //
+    // TAP TEMPO
+    //
+
+    let tapRunning = false
+    let tapTargetCount = 8
+    let tapCount = 0
+    let tapResult = -1
     let tapTimes: number[] = []
 
+    //
+    // METRONOME
+    //
+
+    /**
+     * Start metronome
+     */
     //% block="start metronome BPM %bpm beats %beats note %noteValue"
+    //% bpm.min=20
+    //% bpm.max=400
     //% bpm.defl=120
+    //% beats.min=1
+    //% beats.max=16
     //% beats.defl=4
     export function start(
         bpm: number,
@@ -58,10 +77,20 @@ namespace metronome {
 
                     currentBeat = beat
 
-                    control.raiseEvent(
-                        EVENT_ID,
-                        beat
-                    )
+                    if (beat == 1) {
+
+                        control.raiseEvent(
+                            FIRST_BEAT_EVENT,
+                            1
+                        )
+
+                    } else {
+
+                        control.raiseEvent(
+                            OTHER_BEAT_EVENT,
+                            1
+                        )
+                    }
 
                     if (ledEnabled) {
 
@@ -70,12 +99,15 @@ namespace metronome {
                         let x = (beat - 1) % 5
 
                         if (beat == 1) {
+
                             led.plotBrightness(
                                 x,
                                 2,
                                 255
                             )
+
                         } else {
+
                             led.plotBrightness(
                                 x,
                                 2,
@@ -92,7 +124,10 @@ namespace metronome {
                         )
 
                         basic.pause(
-                            Math.max(1, duration - 80)
+                            Math.max(
+                                1,
+                                duration - 80
+                            )
                         )
 
                     } else {
@@ -103,7 +138,10 @@ namespace metronome {
                         )
 
                         basic.pause(
-                            Math.max(1, duration - 40)
+                            Math.max(
+                                1,
+                                duration - 40
+                            )
                         )
                     }
                 }
@@ -111,6 +149,9 @@ namespace metronome {
         })
     }
 
+    /**
+     * Stop metronome
+     */
     //% block="stop metronome"
     export function stop(): void {
 
@@ -123,6 +164,9 @@ namespace metronome {
         basic.clearScreen()
     }
 
+    /**
+     * Restart metronome
+     */
     //% block="restart metronome BPM %bpm beats %beats note %noteValue"
     export function restart(
         bpm: number,
@@ -141,24 +185,36 @@ namespace metronome {
         )
     }
 
+    /**
+     * Metronome running
+     */
     //% block="metronome running"
     export function isRunning(): boolean {
 
         return running
     }
 
+    /**
+     * Current beat
+     */
     //% block="current beat"
     export function getCurrentBeat(): number {
 
         return currentBeat
     }
 
+    /**
+     * Current BPM
+     */
     //% block="current BPM"
     export function getCurrentBpm(): number {
 
         return currentBpm
     }
 
+    /**
+     * Enable LED display
+     */
     //% block="set LED metronome %enabled"
     export function setLedDisplay(
         enabled: boolean
@@ -167,6 +223,9 @@ namespace metronome {
         ledEnabled = enabled
     }
 
+    /**
+     * Accent frequency
+     */
     //% block="set accent frequency %hz"
     export function setAccentFrequency(
         hz: number
@@ -175,6 +234,9 @@ namespace metronome {
         accentFrequency = hz
     }
 
+    /**
+     * Beat frequency
+     */
     //% block="set beat frequency %hz"
     export function setBeatFrequency(
         hz: number
@@ -183,32 +245,124 @@ namespace metronome {
         beatFrequency = hz
     }
 
-    //% block="reset tap tempo"
-    export function resetTapTempo(): void {
+    //
+    // EVENTS
+    //
 
-        tapTimes = []
+    /**
+     * On first beat
+     */
+    //% block="on first beat"
+    export function onFirstBeat(
+        handler: () => void
+    ): void {
+
+        control.onEvent(
+            FIRST_BEAT_EVENT,
+            1,
+            handler
+        )
     }
 
-    //% block="tap tempo"
-    export function tapTempo(): number {
+    /**
+     * On other beat
+     */
+    //% block="on other beat"
+    export function onOtherBeat(
+        handler: () => void
+    ): void {
+
+        control.onEvent(
+            OTHER_BEAT_EVENT,
+            1,
+            handler
+        )
+    }
+
+    //
+    // TAP TEMPO
+    //
+
+    /**
+     * Start Tap Tempo
+     */
+    //% block="start tap tempo count %count"
+    //% count.min=4
+    //% count.max=9
+    //% count.defl=8
+    export function startTapTempo(
+        count: number
+    ): void {
+
+        tapRunning = true
+
+        tapTargetCount = count
+        tapCount = 0
+        tapResult = -1
+
+        tapTimes = []
+
+        basic.showNumber(count)
+
+        control.inBackground(function () {
+
+            basic.pause(4000)
+
+            if (
+                tapRunning &&
+                tapCount == 0
+            ) {
+
+                tapRunning = false
+
+                basic.showIcon(
+                    IconNames.No
+                )
+            }
+        })
+    }
+
+    /**
+     * Register Tap
+     */
+    //% block="register tap"
+    export function registerTap(): void {
+
+        if (!tapRunning)
+            return
 
         let now = input.runningTime()
 
         if (
             tapTimes.length > 0 &&
-            now - tapTimes[tapTimes.length - 1] > TAP_TIMEOUT
+            now - tapTimes[tapTimes.length - 1] > 4000
         ) {
-            tapTimes = []
+
+            tapRunning = false
+
+            tapResult = -1
+
+            basic.showIcon(
+                IconNames.No
+            )
+
+            return
         }
 
         tapTimes.push(now)
 
-        if (tapTimes.length > 8) {
-            tapTimes.shift()
-        }
+        tapCount++
 
-        if (tapTimes.length < 2) {
-            return 0
+        let remaining =
+            tapTargetCount - tapCount
+
+        if (remaining > 0) {
+
+            basic.showNumber(
+                remaining
+            )
+
+            return
         }
 
         let sum = 0
@@ -224,28 +378,55 @@ namespace metronome {
                 - tapTimes[i - 1]
         }
 
-        let average =
+        let avg =
             sum /
             (tapTimes.length - 1)
 
-        currentBpm =
+        tapResult =
             Math.round(
-                60000 / average
+                60000 / avg
             )
 
-        return currentBpm
+        currentBpm =
+            tapResult
+
+        tapRunning = false
+
+        basic.showIcon(
+            IconNames.Yes
+        )
     }
 
-    //% block="on beat %beat"
-    export function onBeat(
-        beat: BeatNumber,
-        handler: () => void
-    ): void {
+    /**
+     * Reset Tap Tempo
+     */
+    //% block="reset tap tempo"
+    export function resetTapTempo(): void {
 
-        control.onEvent(
-            EVENT_ID,
-            beat,
-            handler
-        )
+        tapRunning = false
+
+        tapCount = 0
+
+        tapResult = -1
+
+        tapTimes = []
+    }
+
+    /**
+     * Tap running
+     */
+    //% block="tap tempo running"
+    export function tapTempoRunning(): boolean {
+
+        return tapRunning
+    }
+
+    /**
+     * Tap result
+     */
+    //% block="tap result"
+    export function getTapResult(): number {
+
+        return tapResult
     }
 }

@@ -1,53 +1,37 @@
 # Metronome
 
-Advanced musical metronome for BBC micro:bit.
+Advanced metronome extension for BBC micro:bit.
 
 ## Features
 
-- BPM control
+- BPM
 - Time signatures
-- LED beat display
+- LED beat indicator
 - First beat accent
-- Tap Tempo
-- Reset Tap Tempo
-- Current BPM
-- Current Beat
-- On Beat events
-- Safe Start and Stop
+- Tap Tempo Wizard
+- Tap countdown
+- Success ✓
+- Failure ✗
+- First Beat Event
+- Other Beat Event
+
+## Tap Tempo
+
+1. Start Tap Tempo
+2. LED shows countdown
+3. Press Button A rhythmically
+4. After last tap:
+   - ✓ success
+   - BPM stored in Tap Result
 
 ## Example
 
 ```blocks
-input.onButtonPressed(Button.A, function () {
+on button A pressed
+    register tap
 
-    let bpm =
-        metronome.tapTempo()
-
-    if (bpm > 0) {
-        basic.showNumber(bpm)
-    }
-})
-```
-
-## Starting Metronome
-
-```blocks
-metronome.start(
-    120,
-    4,
-    metronome.NoteValue.Quarter
-)
-```
-
-## Event Example
-
-```blocks
-metronome.onBeat(
-    metronome.BeatNumber.One,
-    function () {
-
-    }
-)
+on button B pressed
+    start tap tempo count 8
 ```
 
 ## License

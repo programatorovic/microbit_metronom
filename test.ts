@@ -1,24 +1,33 @@
 let bpm = 120
 
-input.onButtonPressed(
-    Button.A,
-    function () {
+input.onButtonPressed(Button.A, function () {
+
+    metronome.registerTap()
+})
+
+input.onButtonPressed(Button.B, function () {
+
+    metronome.startTapTempo(8)
+})
+
+metronome.onFirstBeat(function () {
+
+    led.plot(0, 0)
+})
+
+metronome.onOtherBeat(function () {
+
+    led.unplot(0, 0)
+})
+
+basic.forever(function () {
+
+    if (metronome.getTapResult() > 0) {
 
         bpm =
-            metronome.tapTempo()
+            metronome.getTapResult()
 
-        if (bpm > 0) {
-
-            basic.showNumber(
-                bpm
-            )
-        }
-    }
-)
-
-input.onButtonPressed(
-    Button.B,
-    function () {
+        metronome.resetTapTempo()
 
         metronome.restart(
             bpm,
@@ -26,20 +35,6 @@ input.onButtonPressed(
             metronome.NoteValue.Quarter
         )
     }
-)
 
-metronome.start(
-    120,
-    4,
-    metronome.NoteValue.Quarter
-)
-
-metronome.onBeat(
-    metronome.BeatNumber.One,
-    function () {
-
-        basic.showIcon(
-            IconNames.Heart
-        )
-    }
-)
+    basic.pause(100)
+})
