@@ -8,14 +8,28 @@ Advanced musical metronome for BBC micro:bit.
 - Time signatures
 - LED beat display
 - First beat accent
-- Custom frequencies
-- TAP tempo
-- On Beat events
+- Tap Tempo
+- Reset Tap Tempo
 - Current BPM
 - Current Beat
-- Safe Start / Stop
+- On Beat events
+- Safe Start and Stop
 
 ## Example
+
+```blocks
+input.onButtonPressed(Button.A, function () {
+
+    let bpm =
+        metronome.tapTempo()
+
+    if (bpm > 0) {
+        basic.showNumber(bpm)
+    }
+})
+```
+
+## Starting Metronome
 
 ```blocks
 metronome.start(

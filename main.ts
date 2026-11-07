@@ -8,6 +8,7 @@
 namespace metronome {
 
     const EVENT_ID = 9000
+    const TAP_TIMEOUT = 2000
 
     let running = false
     let sessionId = 0
@@ -22,9 +23,6 @@ namespace metronome {
 
     let tapTimes: number[] = []
 
-    /**
-     * Start Metronome
-     */
     //% block="start metronome BPM %bpm beats %beats note %noteValue"
     //% bpm.defl=120
     //% beats.defl=4
@@ -94,10 +92,7 @@ namespace metronome {
                         )
 
                         basic.pause(
-                            Math.max(
-                                1,
-                                duration - 80
-                            )
+                            Math.max(1, duration - 80)
                         )
 
                     } else {
@@ -108,10 +103,7 @@ namespace metronome {
                         )
 
                         basic.pause(
-                            Math.max(
-                                1,
-                                duration - 40
-                            )
+                            Math.max(1, duration - 40)
                         )
                     }
                 }
@@ -119,9 +111,6 @@ namespace metronome {
         })
     }
 
-    /**
-     * Stop Metronome
-     */
     //% block="stop metronome"
     export function stop(): void {
 
@@ -134,9 +123,6 @@ namespace metronome {
         basic.clearScreen()
     }
 
-    /**
-     * Restart Metronome
-     */
     //% block="restart metronome BPM %bpm beats %beats note %noteValue"
     export function restart(
         bpm: number,
@@ -155,36 +141,24 @@ namespace metronome {
         )
     }
 
-    /**
-     * Is Running
-     */
     //% block="metronome running"
     export function isRunning(): boolean {
 
         return running
     }
 
-    /**
-     * Current Beat
-     */
     //% block="current beat"
     export function getCurrentBeat(): number {
 
         return currentBeat
     }
 
-    /**
-     * Current BPM
-     */
     //% block="current BPM"
     export function getCurrentBpm(): number {
 
         return currentBpm
     }
 
-    /**
-     * Enable LED Display
-     */
     //% block="set LED metronome %enabled"
     export function setLedDisplay(
         enabled: boolean
@@ -193,9 +167,6 @@ namespace metronome {
         ledEnabled = enabled
     }
 
-    /**
-     * Set Accent Frequency
-     */
     //% block="set accent frequency %hz"
     export function setAccentFrequency(
         hz: number
@@ -204,9 +175,6 @@ namespace metronome {
         accentFrequency = hz
     }
 
-    /**
-     * Set Beat Frequency
-     */
     //% block="set beat frequency %hz"
     export function setBeatFrequency(
         hz: number
@@ -215,17 +183,27 @@ namespace metronome {
         beatFrequency = hz
     }
 
-    /**
-     * TAP tempo
-     */
+    //% block="reset tap tempo"
+    export function resetTapTempo(): void {
+
+        tapTimes = []
+    }
+
     //% block="tap tempo"
     export function tapTempo(): number {
 
         let now = input.runningTime()
 
+        if (
+            tapTimes.length > 0 &&
+            now - tapTimes[tapTimes.length - 1] > TAP_TIMEOUT
+        ) {
+            tapTimes = []
+        }
+
         tapTimes.push(now)
 
-        if (tapTimes.length > 5) {
+        if (tapTimes.length > 8) {
             tapTimes.shift()
         }
 
@@ -235,29 +213,29 @@ namespace metronome {
 
         let sum = 0
 
-        for (let i = 1; i < tapTimes.length; i++) {
+        for (
+            let i = 1;
+            i < tapTimes.length;
+            i++
+        ) {
 
             sum +=
                 tapTimes[i]
                 - tapTimes[i - 1]
         }
 
-        let avg =
+        let average =
             sum /
             (tapTimes.length - 1)
-            
 
         currentBpm =
             Math.round(
-                60000 / avg
+                60000 / average
             )
 
         return currentBpm
     }
 
-    /**
-     * On Beat Event
-     */
     //% block="on beat %beat"
     export function onBeat(
         beat: BeatNumber,
@@ -270,5 +248,4 @@ namespace metronome {
             handler
         )
     }
-
 }

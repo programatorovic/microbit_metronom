@@ -1,8 +1,10 @@
+let bpm = 120
+
 input.onButtonPressed(
     Button.A,
     function () {
 
-        let bpm =
+        bpm =
             metronome.tapTempo()
 
         if (bpm > 0) {
@@ -11,6 +13,18 @@ input.onButtonPressed(
                 bpm
             )
         }
+    }
+)
+
+input.onButtonPressed(
+    Button.B,
+    function () {
+
+        metronome.restart(
+            bpm,
+            4,
+            metronome.NoteValue.Quarter
+        )
     }
 )
 
