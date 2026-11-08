@@ -1,6 +1,5 @@
 /**
- * Advanced Metronome
- * BBC micro:bit
+ * Musical Metronome
  */
 
 //% color=#3366CC icon="\uf001"
@@ -18,22 +17,11 @@ namespace metronome {
 
     let ledEnabled = true
 
+    // prvá doba
     let accentFrequency = 2000
+
+    // ostatné doby
     let beatFrequency = 1000
-
-    //
-    // TAP TEMPO
-    //
-
-    let tapRunning = false
-    let tapTargetCount = 8
-    let tapCount = 0
-    let tapResult = -1
-    let tapTimes: number[] = []
-
-    //
-    // METRONOME
-    //
 
     /**
      * Start metronome
@@ -53,6 +41,12 @@ namespace metronome {
 
         stop()
 
+        if (bpm < 1)
+            bpm = 1
+
+        if (beats < 1)
+            beats = 1
+
         currentBpm = bpm
 
         running = true
@@ -62,18 +56,30 @@ namespace metronome {
 
         control.inBackground(function () {
 
-            while (running && mySession == sessionId) {
+            while (
+                running &&
+                mySession == sessionId
+            ) {
 
-                let quarter = 60000 / bpm
-                let duration = quarter * (4 / noteValue)
+                let quarter =
+                    60000 / bpm
 
-                for (let beat = 1; beat <= beats; beat++) {
+                let duration =
+                    quarter *
+                    (4 / noteValue)
 
-                    if (!running)
+                for (
+                    let beat = 1;
+                    beat <= beats;
+                    beat++
+                ) {
+
+                    if (
+                        !running ||
+                        mySession != sessionId
+                    ) {
                         return
-
-                    if (mySession != sessionId)
-                        return
+                    }
 
                     currentBeat = beat
 
@@ -96,7 +102,8 @@ namespace metronome {
 
                         basic.clearScreen()
 
-                        let x = (beat - 1) % 5
+                        let x =
+                            (beat - 1) % 5
 
                         if (beat == 1) {
 
@@ -156,7 +163,6 @@ namespace metronome {
     export function stop(): void {
 
         running = false
-
         sessionId++
 
         music.stopAllSounds()
@@ -186,24 +192,6 @@ namespace metronome {
     }
 
     /**
-     * Metronome running
-     */
-    //% block="metronome running"
-    export function isRunning(): boolean {
-
-        return running
-    }
-
-    /**
-     * Current beat
-     */
-    //% block="current beat"
-    export function getCurrentBeat(): number {
-
-        return currentBeat
-    }
-
-    /**
      * Current BPM
      */
     //% block="current BPM"
@@ -213,7 +201,25 @@ namespace metronome {
     }
 
     /**
-     * Enable LED display
+     * Current Beat
+     */
+    //% block="current beat"
+    export function getCurrentBeat(): number {
+
+        return currentBeat
+    }
+
+    /**
+     * Metronome running
+     */
+    //% block="metronome running"
+    export function isRunning(): boolean {
+
+        return running
+    }
+
+    /**
+     * Enable LED beat display
      */
     //% block="set LED metronome %enabled"
     export function setLedDisplay(
@@ -221,12 +227,19 @@ namespace metronome {
     ): void {
 
         ledEnabled = enabled
+
+        if (!enabled) {
+            basic.clearScreen()
+        }
     }
 
     /**
-     * Accent frequency
+     * Set accent frequency
      */
     //% block="set accent frequency %hz"
+    //% hz.min=100
+    //% hz.max=5000
+    //% hz.defl=2000
     export function setAccentFrequency(
         hz: number
     ): void {
@@ -235,9 +248,12 @@ namespace metronome {
     }
 
     /**
-     * Beat frequency
+     * Set beat frequency
      */
     //% block="set beat frequency %hz"
+    //% hz.min=100
+    //% hz.max=5000
+    //% hz.defl=1000
     export function setBeatFrequency(
         hz: number
     ): void {
@@ -245,14 +261,11 @@ namespace metronome {
         beatFrequency = hz
     }
 
-    //
-    // EVENTS
-    //
-
     /**
      * On first beat
      */
     //% block="on first beat"
+    //% blockAllowMultiple=1
     export function onFirstBeat(
         handler: () => void
     ): void {
@@ -268,6 +281,7 @@ namespace metronome {
      * On other beat
      */
     //% block="on other beat"
+    //% blockAllowMultiple=1
     export function onOtherBeat(
         handler: () => void
     ): void {
@@ -277,156 +291,5 @@ namespace metronome {
             1,
             handler
         )
-    }
-
-    //
-    // TAP TEMPO
-    //
-
-    /**
-     * Start Tap Tempo
-     */
-    //% block="start tap tempo count %count"
-    //% count.min=4
-    //% count.max=9
-    //% count.defl=8
-    export function startTapTempo(
-        count: number
-    ): void {
-
-        tapRunning = true
-
-        tapTargetCount = count
-        tapCount = 0
-        tapResult = -1
-
-        tapTimes = []
-
-        basic.showNumber(count)
-
-        control.inBackground(function () {
-
-            basic.pause(4000)
-
-            if (
-                tapRunning &&
-                tapCount == 0
-            ) {
-
-                tapRunning = false
-
-                basic.showIcon(
-                    IconNames.No
-                )
-            }
-        })
-    }
-
-    /**
-     * Register Tap
-     */
-    //% block="register tap"
-    export function registerTap(): void {
-
-        if (!tapRunning)
-            return
-
-        let now = input.runningTime()
-
-        if (
-            tapTimes.length > 0 &&
-            now - tapTimes[tapTimes.length - 1] > 4000
-        ) {
-
-            tapRunning = false
-
-            tapResult = -1
-
-            basic.showIcon(
-                IconNames.No
-            )
-
-            return
-        }
-
-        tapTimes.push(now)
-
-        tapCount++
-
-        let remaining =
-            tapTargetCount - tapCount
-
-        if (remaining > 0) {
-
-            basic.showNumber(
-                remaining
-            )
-
-            return
-        }
-
-        let sum = 0
-
-        for (
-            let i = 1;
-            i < tapTimes.length;
-            i++
-        ) {
-
-            sum +=
-                tapTimes[i]
-                - tapTimes[i - 1]
-        }
-
-        let avg =
-            sum /
-            (tapTimes.length - 1)
-
-        tapResult =
-            Math.round(
-                60000 / avg
-            )
-
-        currentBpm =
-            tapResult
-
-        tapRunning = false
-
-        basic.showIcon(
-            IconNames.Yes
-        )
-    }
-
-    /**
-     * Reset Tap Tempo
-     */
-    //% block="reset tap tempo"
-    export function resetTapTempo(): void {
-
-        tapRunning = false
-
-        tapCount = 0
-
-        tapResult = -1
-
-        tapTimes = []
-    }
-
-    /**
-     * Tap running
-     */
-    //% block="tap tempo running"
-    export function tapTempoRunning(): boolean {
-
-        return tapRunning
-    }
-
-    /**
-     * Tap result
-     */
-    //% block="tap result"
-    export function getTapResult(): number {
-
-        return tapResult
     }
 }

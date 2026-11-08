@@ -1,7 +1,7 @@
 {
     "name": "metronome",
     "version": "2.0.0",
-    "description": "Advanced musical metronome for BBC micro:bit",
+    "description": "Musical metronome for BBC micro:bit",
     "license": "MIT",
     "dependencies": {
         "core": "*"

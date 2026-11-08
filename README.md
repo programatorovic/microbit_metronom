@@ -1,37 +1,40 @@
 # Metronome
 
-Advanced metronome extension for BBC micro:bit.
+Musical metronome extension for BBC micro:bit.
 
 ## Features
 
-- BPM
+- BPM control
 - Time signatures
-- LED beat indicator
-- First beat accent
-- Tap Tempo Wizard
-- Tap countdown
-- Success ✓
-- Failure ✗
-- First Beat Event
-- Other Beat Event
-
-## Tap Tempo
-
-1. Start Tap Tempo
-2. LED shows countdown
-3. Press Button A rhythmically
-4. After last tap:
-   - ✓ success
-   - BPM stored in Tap Result
+- Whole, half, quarter, eighth and sixteenth notes
+- Accented first beat
+- LED beat display
+- First beat event
+- Other beat event
+- Safe start/stop
 
 ## Example
 
 ```blocks
-on button A pressed
-    register tap
+metronome.start(
+    120,
+    4,
+    metronome.NoteValue.Quarter
+)
+```
 
-on button B pressed
-    start tap tempo count 8
+## Events
+
+```blocks
+metronome.onFirstBeat(function () {
+
+})
+```
+
+```blocks
+metronome.onOtherBeat(function () {
+
+})
 ```
 
 ## License
